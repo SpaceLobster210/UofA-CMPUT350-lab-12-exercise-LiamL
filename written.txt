@@ -1,8 +1,8 @@
 ﻿Q3. What happens to the bounding boxes with update + fullRefit?
-The bounding boxes change size and cross over one another.
+The bounding boxes change size to fit around their contained circles.
 
 Q4. What happens with reset (rebuild every frame) instead?
-Objects will occasionally switch to different nodes, and you can see the bounding boxes jumping around when this happens.
+Objects will occasionally switch between different nodes, and you can see the bounding boxes jumping around when this happens. I.e. an object owned by one node moves until it is sorted into a different node when the tree is rebuilt.
 
 Q5. Why are some circles drawn with their sides cut off?
-Supposedly, this happens if you do not update the bounding box when circles move outside of it. However, this was not an issue that I ran into with my code.
+This happens if we rebuild the BVH before calling update. Circles that are not contained within the bounding box are not fully drawn.

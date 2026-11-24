@@ -1,6 +1,6 @@
 // Lab 12: 2D ray tracing with a BVH. Work through the TODOs below and answer the questions in
 // written.txt.
-// TODO Bonus 2: some circles are drawn with their sides cut off; fix them.
+// Bonus 2: some circles are drawn with their sides cut off; fix them.
 
 #include <algorithm>
 #include <array>
@@ -39,8 +39,8 @@ struct BVHNode {
     int childAOrIdx = -1;  // if leaf node, first index into index list, else child bvh node ptr
     int childBOrLen = -1;  // if leaf node, length into index list, else child bvh node ptr
     int isLeaf = 0;
-    // TODO Bonus 1: store each node's height in the tree and color its box in Draw by height.
-    int padding = 0;  // to get to POT size of 32 bytes.
+    // Bonus 1: store each node's height in the tree and color its box in Draw by height.
+    int height = 0;
 };
 static_assert(sizeof(BVHNode) == 32, "keep BVHNode a power-of-two size");
 
@@ -133,7 +133,7 @@ struct BVH {
         }
 
         const auto makeLeaf = [&] {
-            nodes[bvhOffset] = BVHNode{totalBound, startIdx, numIndices, /*isLeaf=*/true};
+            nodes[bvhOffset] = BVHNode{totalBound, startIdx, numIndices, /*isLeaf=*/true, static_cast<int>(nodes.size())};
         };
         // see if we should be leaf node
         if (numIndices * T_ISECT < minCost) {
@@ -153,7 +153,7 @@ struct BVH {
         // internal node; children are appended after their parent
         const int childA = static_cast<int>(nodes.size());
         const int childB = childA + 1;
-        nodes[bvhOffset] = BVHNode{totalBound, childA, childB, /*isLeaf=*/false};
+        nodes[bvhOffset] = BVHNode{totalBound, childA, childB, /*isLeaf=*/false, static_cast<int>(nodes.size())};
         nodes.resize(nodes.size() + 2);  // filled in by the recursive calls
         constructNode(startIdx, smallerCount, childA);
         constructNode(startIdx + smallerCount, numIndices - smallerCount, childB);
@@ -224,13 +224,27 @@ struct Scene {
     std::vector<Circle> circles;
 };
 
-void Draw(sf::RenderWindow& window, const AABB<float>& aabb) {
+void Draw(sf::RenderWindow& window, const AABB<float>& aabb, int height) {
     // draw frame of rectangle
     static sf::RectangleShape shape;
     shape.setSize(aabb.maxPoint - aabb.minPoint);
     shape.setPosition(aabb.minPoint);
     shape.setFillColor(sf::Color::Transparent);
-    shape.setOutlineColor(sf::Color::White);
+
+    // Outline color
+    sf::Color outlineColor = sf::Color::White;
+    height = (height % 153) * 5;
+    if (height < 255) {
+        outlineColor = sf::Color((height % 255), 255 - (height % 255), 255, 255);
+    }
+    else if (height < 510) {
+        outlineColor = sf::Color(255, (height % 255), 255 - (height % 255), 255);
+    }
+    else {
+        outlineColor = sf::Color(255 - (height % 255), 255, (height % 255), 255);
+    }
+    shape.setOutlineColor(outlineColor);
+    
     shape.setOutlineThickness(1.0f);
     window.draw(shape);
 }
@@ -247,7 +261,7 @@ int main() {
     Scene scene;
     for (int n = 0; n < 100; ++n) {
         scene.createCircle({uniform(0, gScreenWidth), uniform(0, gScreenHeight)}, uniform(10, 20),
-                           {uniform(0, 1), uniform(0, 1), uniform(0, 1), 1}, sf::Vector2f(uniform(-10, 10), uniform(-10, 10)));
+                           {uniform(0, 1), uniform(0, 1), uniform(0, 1), 1}, sf::Vector2f(uniform(-5, 5), uniform(-5, 5)));
     }
     BVH bvh(scene.circles);
 
@@ -303,7 +317,7 @@ int main() {
         // Q1: only draw non-leaf nodes so the BVH structure is easier to see.
         for (const BVHNode& node : bvh.nodes) {
             if (!node.isLeaf) {
-                Draw(window, node.bounds);
+                Draw(window, node.bounds, node.height);
             }
         }
         window.display();
