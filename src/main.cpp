@@ -56,7 +56,13 @@ struct BVH {
         constructNode(0, static_cast<int>(indices.size()), 0);
     }
 
-    // TODO Q4: write a reset() function that rebuilds the tree instead of refitting it.
+    // Q4: write a reset() function that rebuilds the tree instead of refitting it.
+    void reset() {
+        nodes.clear();
+        nodes.reserve(2 * primitives->size());
+        nodes.push_back({});
+        constructNode(0, static_cast<int>(indices.size()), 0);
+    }
 
     void constructNode(int startIdx, int numIndices, int bvhOffset) {
         const std::vector<Circle>& prims = *primitives;
@@ -241,7 +247,7 @@ int main() {
     Scene scene;
     for (int n = 0; n < 100; ++n) {
         scene.createCircle({uniform(0, gScreenWidth), uniform(0, gScreenHeight)}, uniform(10, 20),
-                           {uniform(0, 1), uniform(0, 1), uniform(0, 1), 1}, sf::Vector2f(uniform(-1, 1), uniform(-1, 1)));
+                           {uniform(0, 1), uniform(0, 1), uniform(0, 1), 1}, sf::Vector2f(uniform(-10, 10), uniform(-10, 10)));
     }
     BVH bvh(scene.circles);
 
@@ -259,9 +265,10 @@ int main() {
 
         // Q3: every frame, call update() on the scene and fullRefit() on the BVH.
         scene.update();
-        bvh.fullRefit();
+        //bvh.fullRefit();
 
-        // TODO Q4: rebuild the BVH with reset() instead of fullRefit().
+        // Q4: rebuild the BVH with reset() instead of fullRefit().
+        bvh.reset();
 
         for (int y = 0; y < gScreenHeight; ++y) {
             for (int x = 0; x < gScreenWidth; ++x) {

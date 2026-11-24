@@ -2,5 +2,7 @@
 The bounding boxes change size and cross over one another.
 
 Q4. What happens with reset (rebuild every frame) instead?
+Objects will occasionally switch to different nodes, and you can see the bounding boxes jumping around when this happens.
 
 Q5. Why are some circles drawn with their sides cut off?
+Supposedly, this happens if you do not update the bounding box when circles move outside of it. However, this was not an issue that I ran into with my code.
