@@ -1,4 +1,5 @@
 ﻿Q3. What happens to the bounding boxes with update + fullRefit?
+The bounding boxes change size and cross over one another.
 
 Q4. What happens with reset (rebuild every frame) instead?
 
